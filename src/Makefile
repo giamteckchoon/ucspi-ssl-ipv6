@@ -36,7 +36,13 @@ clean:
 	tai_pack.o taia_add.o taia_approx.o taia_frac.o taia_less.o taia_now.o \
 	taia_pack.o taia_sub.o taia_uint.o timeoutconn.o uint16_pack.o \
 	uint16_unpack.o uint32.h uint32_pack.o uint32_unpack.o uint64.h unix.a \
-	wait_nohang.o wait_pid.o
+	wait_nohang.o wait_pid.o dns_ip6.o dns_ipq6.o dns_nd6.o dns_sortip6.o \
+	fmt_xlong.o ip6_fmt.o ip6_scan.o scan_0x.o socket_accept6.o socket_bind6.o \
+	socket_conn6.o socket_local6.o socket_recv6.o socket_remote6.o \
+	socket_send6.o socket_tcp6.o timeoutconn6.o haveip6.h remoteinfo6.o \
+	socket_getifidx.o socket_getifname.o scan_ip6.o scan_xlong.o \
+	socket_ip4loopback.o socket_udp6.o socket_v4mappedprefix.o \
+	socket_v6any.o socket_v6loopback.o tryssl.o
 
 alloc.o: compile alloc.c alloc.h error.h
 	./compile alloc.c
@@ -219,7 +225,7 @@ iopause.h taia.h tai.h gen_alloc.h taia.h tai.h uint64.h tai.h uint64.h \
 uint64.h
 	./compile dns_random.c
 
-dns_rcip.o: compile dns_rcip.c taia.h openreadclose.h byte.h ip4.h env.h \
+dns_rcip.o: compile dns_rcip.c taia.h openreadclose.h byte.h ip4.h ip6.h env.h \
 dns.h tai.h stralloc.h stralloc.h iopause.h taia.h uint64.h gen_alloc.h \
 gen_alloc.h taia.h tai.h tai.h uint64.h uint64.h
 	./compile dns_rcip.c
@@ -240,7 +246,7 @@ taia.h gen_alloc.h taia.h tai.h tai.h uint64.h uint64.h
 
 dns_transmit.o: compile dns_transmit.c socket.h alloc.h error.h byte.h \
 uint16.h dns.h uint16.h stralloc.h iopause.h taia.h gen_alloc.h taia.h \
-tai.h tai.h uint64.h uint64.h
+tai.h tai.h uint32.h uint64.h uint64.h
 	./compile dns_transmit.c
 
 dns_txt.o: compile dns_txt.c stralloc.h uint16.h byte.h dns.h gen_alloc.h \
@@ -372,8 +378,14 @@ gen_alloc.h
 
 remoteinfo.o: compile remoteinfo.c fmt.h buffer.h socket.h error.h \
 iopause.h timeoutconn.h remoteinfo.h uint16.h taia.h uint16.h stralloc.h \
-uint16.h tai.h gen_alloc.h uint64.h
+uint16.h tai.h gen_alloc.h uint32.h uint64.h
 	./compile remoteinfo.c
+
+remoteinfo6.o: \
+compile remoteinfo6.c fmt.h buffer.h socket.h uint16.h error.h \
+iopause.h taia.h tai.h uint64.h timeoutconn.h uint16.h remoteinfo.h \
+stralloc.h gen_alloc.h uint16.h uint32.h
+	./compile remoteinfo6.c
 
 rules.o: compile rules.c alloc.h stralloc.h open.h cdb.h rules.h \
 gen_alloc.h uint32.h stralloc.h gen_alloc.h
@@ -412,34 +424,34 @@ socket.lib: trylsock.c compile load
 	&& echo -lsocket -lnsl || exit 0 ) > socket.lib
 	rm -f trylsock.o trylsock
 
-socket_accept.o: compile socket_accept.c byte.h socket.h uint16.h
+socket_accept.o: compile socket_accept.c byte.h socket.h uint16.h uint32.h
 	./compile socket_accept.c
 
-socket_bind.o: compile socket_bind.c byte.h socket.h uint16.h
+socket_bind.o: compile socket_bind.c byte.h socket.h uint16.h uint32.h
 	./compile socket_bind.c
 
-socket_conn.o: compile socket_conn.c byte.h socket.h uint16.h
+socket_conn.o: compile socket_conn.c byte.h socket.h uint16.h uint32.h
 	./compile socket_conn.c
 
-socket_delay.o: compile socket_delay.c socket.h uint16.h
+socket_delay.o: compile socket_delay.c socket.h uint16.h uint32.h
 	./compile socket_delay.c
 
-socket_listen.o: compile socket_listen.c socket.h uint16.h
+socket_listen.o: compile socket_listen.c socket.h uint16.h uint32.h
 	./compile socket_listen.c
 
-socket_local.o: compile socket_local.c byte.h socket.h uint16.h
+socket_local.o: compile socket_local.c byte.h socket.h uint16.h uint32.h
 	./compile socket_local.c
 
-socket_opts.o: compile socket_opts.c socket.h uint16.h
+socket_opts.o: compile socket_opts.c socket.h uint16.h uint32.h
 	./compile socket_opts.c
 
-socket_remote.o: compile socket_remote.c byte.h socket.h uint16.h
+socket_remote.o: compile socket_remote.c byte.h socket.h uint16.h uint32.h
 	./compile socket_remote.c
 
-socket_tcp.o: compile socket_tcp.c ndelay.h socket.h uint16.h
+socket_tcp.o: compile socket_tcp.c ndelay.h socket.h uint16.h uint32.h
 	./compile socket_tcp.c
 
-socket_udp.o: compile socket_udp.c ndelay.h socket.h uint16.h
+socket_udp.o: compile socket_udp.c ndelay.h socket.h uint16.h uint32.h
 	./compile socket_udp.c
 
 ssl.a: makelib ssl.o ssl_io.o ssl_context.o ssl_new.o ssl_timeoutconn.o \
@@ -503,18 +515,18 @@ sslcat: home warn-auto.sh sslcat.sh
 	> sslcat
 	chmod 755 sslcat
 
-sslclient: load sslclient.o remoteinfo.o timeoutconn.o ssl.a unix.a \
+sslclient: load sslclient.o remoteinfo6.o timeoutconn6.o ssl.a unix.a \
 auto_cafile.o auto_cadir.o auto_ciphers.o socket.lib ssl.lib
-	./load sslclient remoteinfo.o timeoutconn.o ssl.a unix.a auto_cafile.o \
+	./load sslclient remoteinfo6.o timeoutconn6.o ssl.a unix.a auto_cafile.o \
 	auto_cadir.o auto_ciphers.o  `cat socket.lib` `cat ssl.lib`
 
 sslclient.o: compile sslclient.c ssl.h sig.h exit.h sgetopt.h uint16.h \
-fmt.h scan.h str.h ip4.h uint16.h socket.h fd.h stralloc.h buffer.h \
+fmt.h scan.h str.h ip4.h ip6.h uint16.h socket.h fd.h stralloc.h buffer.h \
 getln.h error.h strerr.h pathexec.h timeoutconn.h remoteinfo.h dns.h \
 auto_cafile.h auto_cadir.h auto_ciphers.h byte.h ndelay.h wait.h \
 stralloc.h subgetopt.h uint16.h gen_alloc.h buffer.h stralloc.h uint16.h \
 stralloc.h uint16.h stralloc.h iopause.h taia.h gen_alloc.h gen_alloc.h \
-gen_alloc.h gen_alloc.h taia.h tai.h tai.h uint64.h uint64.h
+gen_alloc.h gen_alloc.h taia.h tai.h tai.h uint32.h uint64.h uint64.h
 	./compile sslclient.c
 
 sslconnect: home warn-auto.sh sslconnect.sh
@@ -526,7 +538,7 @@ sslconnect: home warn-auto.sh sslconnect.sh
 	chmod 755 sslconnect
 
 sslhandle.o: compile sslhandle.c ssl.h uint16.h str.h byte.h fmt.h scan.h \
-ip4.h fd.h exit.h env.h prot.h open.h wait.h stralloc.h alloc.h buffer.h \
+ip4.h ip6.h fd.h exit.h env.h prot.h open.h wait.h stralloc.h alloc.h buffer.h \
 getln.h error.h strerr.h sgetopt.h socket.h ndelay.h remoteinfo.h rules.h \
 sig.h dns.h auto_cafile.h auto_cadir.h auto_ccafile.h auto_dhfile.h \
 auto_certfile.h auto_keyfile.h auto_ciphers.h iopause.h coe.h lock.h \
@@ -562,20 +574,20 @@ sslprint.o: compile sslprint.c buffer.h env.h
 
 sslserver: load sslserver.o auto_cafile.o auto_ccafile.o auto_cadir.o \
 auto_dhfile.o auto_certfile.o auto_keyfile.o auto_ciphers.o rules.o \
-remoteinfo.o timeoutconn.o cdb.a ssl.a unix.a socket.lib ssl.lib
+remoteinfo6.o timeoutconn6.o cdb.a ssl.a unix.a socket.lib ssl.lib
 	./load sslserver auto_cafile.o auto_ccafile.o auto_cadir.o auto_dhfile.o \
-	auto_certfile.o auto_keyfile.o auto_ciphers.o rules.o remoteinfo.o \
-	timeoutconn.o cdb.a ssl.a unix.a  `cat socket.lib` `cat ssl.lib`
+	auto_certfile.o auto_keyfile.o auto_ciphers.o rules.o remoteinfo6.o \
+	timeoutconn6.o cdb.a ssl.a unix.a  `cat socket.lib` `cat ssl.lib`
 
 sslserver.o: compile sslserver.c ssl.h uint16.h str.h byte.h fmt.h scan.h \
-ip4.h fd.h exit.h env.h prot.h open.h wait.h stralloc.h alloc.h buffer.h \
+ip4.h ip6.h fd.h exit.h env.h prot.h open.h wait.h stralloc.h alloc.h buffer.h \
 getln.h error.h strerr.h sgetopt.h pathexec.h socket.h ndelay.h \
 remoteinfo.h rules.h sig.h dns.h auto_cafile.h auto_cadir.h \
 auto_ccafile.h auto_dhfile.h auto_certfile.h auto_keyfile.h \
 auto_ciphers.h stralloc.h gen_alloc.h buffer.h stralloc.h subgetopt.h \
 uint16.h stralloc.h uint16.h stralloc.h stralloc.h iopause.h taia.h \
 gen_alloc.h gen_alloc.h gen_alloc.h gen_alloc.h gen_alloc.h taia.h tai.h \
-tai.h uint64.h uint64.h
+tai.h uint32.h uint64.h uint64.h
 	./compile sslserver.c
 
 str_chr.o: compile str_chr.c str.h
@@ -671,8 +683,13 @@ taia_uint.o: compile taia_uint.c taia.h tai.h uint64.h
 	./compile taia_uint.c
 
 timeoutconn.o: compile timeoutconn.c ndelay.h socket.h iopause.h error.h \
-timeoutconn.h uint16.h taia.h uint16.h tai.h uint64.h
+timeoutconn.h uint16.h taia.h uint16.h tai.h uint32.h uint64.h
 	./compile timeoutconn.c
+
+timeoutconn6.o: \
+compile timeoutconn6.c ndelay.h socket.h uint16.h iopause.h taia.h \
+tai.h uint64.h error.h timeoutconn.h uint16.h uint32.h
+	./compile timeoutconn6.c
 
 uint16_pack.o: compile uint16_pack.c uint16.h
 	./compile uint16_pack.c
@@ -711,7 +728,12 @@ taia_add.o taia_approx.o taia_frac.o taia_less.o taia_now.o taia_pack.o \
 taia_sub.o taia_uint.o dns_dfd.o dns_domain.o dns_dtda.o dns_ip.o \
 dns_ipq.o dns_name.o dns_nd.o dns_packet.o dns_random.o dns_rcip.o \
 dns_rcrw.o dns_resolve.o dns_sortip.o dns_transmit.o dns_txt.o lock_ex.o \
-lock_un.o coe.o
+lock_un.o coe.o socket_conn6.o socket_bind6.o socket_accept6.o socket_recv6.o \
+socket_send6.o socket_local6.o socket_remote6.o socket_tcp6.o \
+socket_getifname.o socket_getifidx.o socket_v4mappedprefix.o \
+socket_ip4loopback.o socket_v6any.o socket_v6loopback.o \
+socket_udp6.o scan_ip6.o ip6_fmt.o scan_xlong.o fmt_xlong.o \
+dns_ip6.o dns_sortip6.o dns_nd6.o dns_ipq6.o
 	./makelib unix.a alloc.o alloc_re.o buffer.o buffer_0.o buffer_1.o \
 	buffer_2.o buffer_get.o buffer_put.o buffer_copy.o buffer_read.o \
 	buffer_write.o env.o error.o error_str.o fd_copy.o fd_move.o fmt_ulong.o \
@@ -731,10 +753,120 @@ lock_un.o coe.o
 	taia_sub.o taia_uint.o dns_dfd.o dns_domain.o dns_dtda.o dns_ip.o \
 	dns_ipq.o dns_name.o dns_nd.o dns_packet.o dns_random.o dns_rcip.o \
 	dns_rcrw.o dns_resolve.o dns_sortip.o dns_transmit.o dns_txt.o lock_ex.o \
-	lock_un.o coe.o
+	lock_un.o coe.o socket_conn6.o socket_bind6.o socket_accept6.o socket_recv6.o \
+	socket_send6.o socket_local6.o socket_remote6.o socket_tcp6.o \
+	socket_getifname.o socket_getifidx.o socket_v4mappedprefix.o \
+	socket_ip4loopback.o socket_v6any.o socket_v6loopback.o \
+	socket_udp6.o scan_ip6.o ip6_fmt.o scan_xlong.o fmt_xlong.o \
+	dns_ip6.o dns_sortip6.o dns_nd6.o dns_ipq6.o
 
 wait_nohang.o: compile wait_nohang.c haswaitp.h
 	./compile wait_nohang.c
 
 wait_pid.o: compile wait_pid.c error.h haswaitp.h
 	./compile wait_pid.c
+
+socket_conn6.o: \
+compile socket_conn6.c socket.h uint16.h haveip6.h error.h ip6.h \
+uint32.h
+	./compile socket_conn6.c
+
+socket_bind6.o: \
+compile socket_bind6.c socket.h uint16.h haveip6.h error.h ip6.h \
+uint32.h
+	./compile socket_bind6.c
+
+socket_accept6.o: \
+compile socket_accept6.c socket.h uint16.h haveip6.h error.h ip6.h \
+uint32.h
+	./compile socket_accept6.c
+
+socket_recv6.o: \
+compile socket_recv6.c socket.h uint16.h haveip6.h error.h ip6.h \
+uint32.h
+	./compile socket_recv6.c
+
+socket_send6.o: \
+compile socket_send6.c socket.h uint16.h haveip6.h error.h uint32.h
+	./compile socket_send6.c
+
+socket_local6.o: \
+compile socket_local6.c socket.h uint16.h haveip6.h error.h uint32.h
+	./compile socket_local6.c
+
+socket_remote6.o: \
+compile socket_remote6.c socket.h uint16.h haveip6.h error.h uint32.h
+	./compile socket_remote6.c
+
+dns_sortip6.o: \
+compile dns_sortip6.c byte.h dns.h stralloc.h gen_alloc.h iopause.h \
+taia.h tai.h uint64.h taia.h
+	./compile dns_sortip6.c
+
+dns_nd6.o: \
+compile dns_nd6.c byte.h fmt.h dns.h stralloc.h gen_alloc.h iopause.h \
+taia.h tai.h uint64.h taia.h
+	./compile dns_nd6.c
+
+dns_ipq6.o: \
+compile dns_ipq6.c stralloc.h gen_alloc.h case.h byte.h str.h dns.h \
+stralloc.h iopause.h taia.h tai.h uint64.h taia.h ip6.h
+	./compile dns_ipq6.c
+
+dns_ip6.o: \
+compile dns_ip6.c stralloc.h gen_alloc.h uint16.h byte.h dns.h \
+stralloc.h iopause.h taia.h tai.h uint64.h taia.h
+	./compile dns_ip6.c
+
+fmt_xlong.o: \
+compile fmt_xlong.c scan.h
+	./compile fmt_xlong.c
+
+scan_xlong.o: \
+compile scan_xlong.c scan.h
+	./compile scan_xlong.c
+
+ip6_fmt.o: \
+compile ip6_fmt.c fmt.h ip6.h
+	./compile ip6_fmt.c
+
+scan_ip6.o: \
+compile scan_ip6.c scan.h ip6.h
+	./compile scan_ip6.c
+
+socket_tcp6.o: \
+compile socket_tcp6.c ndelay.h socket.h uint16.h haveip6.h uint32.h
+	./compile socket_tcp6.c
+
+socket_udp6.o: \
+compile socket_udp6.c ndelay.h socket.h uint16.h haveip6.h uint32.h
+	./compile socket_udp6.c
+
+haveip6.h: \
+tryip6.c choose compile haveip6.h1 haveip6.h2
+	./choose c tryip6 haveip6.h1 haveip6.h2 > haveip6.h
+
+socket_getifname.o: \
+compile socket_getifname.c socket.h uint16.h uint32.h
+	./compile socket_getifname.c
+
+socket_getifidx.o: \
+compile socket_getifidx.c socket.h uint16.h uint32.h
+	./compile socket_getifidx.c
+
+socket_ip4loopback.o: \
+compile socket_ip4loopback.c
+	./compile socket_ip4loopback.c
+
+socket_v4mappedprefix.o: \
+compile socket_v4mappedprefix.c
+	./compile socket_v4mappedprefix.c
+
+socket_v6any.o: \
+compile socket_v6any.c
+	./compile socket_v6any.c
+
+socket_v6loopback.o: \
+compile socket_v6loopback.c
+	./compile socket_v6loopback.c
+
